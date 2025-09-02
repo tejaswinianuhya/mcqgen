@@ -3,18 +3,22 @@ import json
 import traceback
 import pandas as pd
 from dotenv import load_dotenv
-from src.mcqgenerator.utils import read_file, get_table_data
+from src.mcqgenerator.utils import read_file,get_table_data
 from src.mcqgenerator.logger import logging
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.chains import SequentialChain
 
+
+# Load environment variables from the .env file
 load_dotenv()
 
-key = os.getenv("OPENAI_API_KEY")
+# Access the environment variables just like you would with os.environ
+key=os.getenv("OPENAI_API_KEY")
 
-llm = ChatOpenAI(openai_api_key = key, model_name="gpt-3.5-turbo", temperature=0.7)
+
+llm = ChatOpenAI(openai_api_key=key,model_name="gpt-3.5-turbo", temperature=0.7)
 
 template="""
 Text:{text}
@@ -35,6 +39,7 @@ quiz_generation_prompt = PromptTemplate(
 
 quiz_chain=LLMChain(llm=llm,prompt=quiz_generation_prompt,output_key="quiz",verbose=True)
 
+
 template2="""
 You are an expert english grammarian and writer. Given a Multiple Choice Quiz for {subject} students.\
 You need to evaluate the complexity of the question and give a complete analysis of the quiz. Only use at max 50 words for complexity analysis. 
@@ -46,10 +51,12 @@ Quiz_MCQs:
 Check from an expert English Writer of the above quiz:
 """
 
+
 quiz_evaluation_prompt=PromptTemplate(input_variables=["subject", "quiz"], template=template2)
 
 review_chain=LLMChain(llm=llm, prompt=quiz_evaluation_prompt, output_key="review", verbose=True)
 
+
 # This is an Overall Chain where we run the two chains in Sequence
 generate_evaluate_chain=SequentialChain(chains=[quiz_chain, review_chain], input_variables=["text", "number", "subject", "tone", "response_json"],
-                                        output_variables=["quiz", "review"], verbose=True)
+                                        output_variables=["quiz", "review"], verbose=True,)
