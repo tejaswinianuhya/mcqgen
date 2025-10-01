@@ -6,4 +6,7 @@ pip3 install -r requirements.txt
 Add openai_api_key in .env
 python3 -m streamlit run StreamlitAPP.py
 
+it’s an AI-powered MCQ generation tool with a web UI built in Streamlit
+
+
 
